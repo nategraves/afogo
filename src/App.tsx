@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { usePositions } from "./usePositions";
 import { positionToColor } from "./positionToColor";
 import { useSynths } from "./useSynths";
+import { useAnimationFrame } from "./useAnimationFrame";
 
 import "./App.css";
 
@@ -20,6 +21,13 @@ function App() {
   const canvas = useRef<SVGSVGElement>(null);
   const positions = usePositions();
   useSynths();
+  /*
+  useAnimationFrame({
+    onFrame: () => {
+      console.log("frame");
+    }
+  });
+  */
 
   return (
     <Container ref={canvas}>
