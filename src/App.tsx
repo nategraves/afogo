@@ -4,7 +4,6 @@ import styled from "styled-components";
 import { usePositions } from "./usePositions";
 import { positionToColor } from "./positionToColor";
 import { useSynths } from "./useSynths";
-import { useAnimationFrame } from "./useAnimationFrame";
 
 import "./App.css";
 
@@ -17,21 +16,17 @@ const Container = styled.svg`
 `;
 
 function App() {
-  //const [frame, setFrame] = useState<number | null>(null);
   const canvas = useRef<SVGSVGElement>(null);
   const positions = usePositions();
   useSynths();
-  /*
-  useAnimationFrame({
-    onFrame: () => {
-      console.log("frame");
-    }
-  });
-  */
 
   return (
     <Container ref={canvas}>
       {positions.map(({ x, y, _x, _y }, i) => {
+        if (x === -1 && y === -1) {
+          return null;
+        }
+
         const { r, g, b } = positionToColor(x, y);
         return (
           <circle

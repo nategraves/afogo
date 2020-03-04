@@ -5,9 +5,11 @@ export type Position = {
   _y: number;
 };
 
+export type IndexPosition = Position & { index: number };
+
 export const InitialPosition = {
-  x: 0,
-  y: 0,
-  _x: 0,
-  _y: 0
+  x: -1,
+  y: -1,
+  _x: -1,
+  _y: -1
 };

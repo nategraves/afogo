@@ -1,60 +1,124 @@
-import { useEffect, useState, TouchEvent } from "react";
+import { useEffect, useState } from "react";
 
+import { useWindowSize } from "react-use";
 import { Position } from "./main.d";
 
-export const useTouchPositions = () => {
-  const [touches, setTouches] = useState<Position[]>([]);
+export type IndexPosition = Position & { index: number };
+
+interface Props {
+  onTouchStart?: (positions: IndexPosition[]) => void;
+  onTouchMove?: (positions: IndexPosition[]) => void;
+  onTouchEnd?: (positions: IndexPosition[]) => void;
+}
+
+export const useTouchPositions = ({
+  onTouchStart,
+  onTouchMove,
+  onTouchEnd
+}: Props) => {
+  const [trackedTouches, setTrackedTouches] = useState<TouchList | null>(null);
+  const [positions, setPositions] = useState<IndexPosition[]>([]);
+
+  const { width: windowWidth, height: windowHeight } = useWindowSize();
 
   useEffect(() => {
-    function fromEvent(ev: TouchEvent) {
-      //ev.preventDefault();
+    function touchStart(ev: TouchEvent) {
+      const { touches, changedTouches } = ev;
 
-      if (ev.touches.length > 0) {
-        const windowWidth =
-          window.innerWidth && document.documentElement.clientWidth
-            ? Math.min(window.innerWidth, document.documentElement.clientWidth)
-            : window.innerWidth ||
-              document.documentElement.clientWidth ||
-              document.getElementsByTagName("body")[0].clientWidth;
-        const windowHeight =
-          window.innerHeight && document.documentElement.clientHeight
-            ? Math.min(
-                window.innerHeight,
-                document.documentElement.clientHeight
-              )
-            : window.innerHeight ||
-              document.documentElement.clientHeight ||
-              document.getElementsByTagName("body")[0].clientHeight;
+      setTrackedTouches(touches);
 
-        setTouches(
-          Object.values(ev.touches).map(({ clientX, clientY }) => ({
-            x: clientX / windowWidth,
-            y: clientY / windowHeight,
-            _x: clientX,
-            _y: clientY
-          }))
-        );
-      } else {
-        setTouches([]);
-      }
+      const indexes = Object.keys(changedTouches);
+      const changed = Object.values(changedTouches).map(
+        ({ clientX, clientY }, i) => ({
+          x: clientX / windowWidth,
+          y: clientY / windowHeight,
+          _x: clientX,
+          _y: clientY,
+          index: parseInt(indexes[i], 10)
+        })
+      );
+      onTouchStart && onTouchStart(changed);
+
+      const _positions = Object.values(touches).map(
+        ({ clientX, clientY }, i) => ({
+          x: clientX / windowWidth,
+          y: clientY / windowHeight,
+          _x: clientX,
+          _y: clientY,
+          index: parseInt(indexes[i], 10)
+        })
+      );
+      setPositions(_positions);
     }
 
-    //@ts-ignore
-    window.addEventListener("touchstart", fromEvent);
-    //@ts-ignore
-    window.addEventListener("touchmove", fromEvent);
-    //@ts-ignore
-    window.addEventListener("touchend", fromEvent);
+    function touchMove(ev: TouchEvent) {
+      const { touches, changedTouches } = ev;
+
+      setTrackedTouches(touches);
+
+      const indexes = Object.keys(changedTouches);
+      const changed = Object.values(changedTouches).map(
+        ({ clientX, clientY }, i) => ({
+          x: clientX / windowWidth,
+          y: clientY / windowHeight,
+          _x: clientX,
+          _y: clientY,
+          index: parseInt(indexes[i], 10)
+        })
+      );
+      onTouchMove && onTouchMove(changed);
+
+      const _positions = Object.values(touches).map(
+        ({ clientX, clientY }, i) => ({
+          x: clientX / windowWidth,
+          y: clientY / windowHeight,
+          _x: clientX,
+          _y: clientY,
+          index: parseInt(indexes[i], 10)
+        })
+      );
+      setPositions(_positions);
+    }
+
+    function touchEnd(ev: TouchEvent) {
+      const { touches, changedTouches } = ev;
+
+      setTrackedTouches(touches);
+
+      const indexes = Object.keys(changedTouches);
+      const changed = Object.values(changedTouches).map(
+        ({ clientX, clientY }, i) => ({
+          x: clientX / windowWidth,
+          y: clientY / windowHeight,
+          _x: clientX,
+          _y: clientY,
+          index: parseInt(indexes[i], 10)
+        })
+      );
+      onTouchEnd && onTouchEnd(changed);
+
+      const _positions = Object.values(touches).map(
+        ({ clientX, clientY }, i) => ({
+          x: clientX / windowWidth,
+          y: clientY / windowHeight,
+          _x: clientX,
+          _y: clientY,
+          index: parseInt(indexes[i], 10)
+        })
+      );
+      setPositions(_positions);
+    }
+
+    window.addEventListener("touchstart", touchStart);
+    window.addEventListener("touchmove", touchMove);
+    window.addEventListener("touchend", touchEnd);
 
     return () => {
-      //@ts-ignore
-      window.removeEventListener("touchmove", setFromEvent);
-      //@ts-ignore
-      window.removeEventListener("touchmove", setFromEvent);
-      //@ts-ignore
-      window.removeEventListener("touchend", handleCancel);
+      window.removeEventListener("touchstart", touchStart);
+      window.removeEventListener("touchmove", touchMove);
+      window.removeEventListener("touchend", touchEnd);
     };
-  }, []);
+  }, [windowHeight, windowWidth, onTouchStart, onTouchMove, onTouchEnd]);
 
-  return touches;
+  return { positions, touches: trackedTouches };
 };

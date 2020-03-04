@@ -1,16 +1,14 @@
-import { useMousePosition } from "./useMousePosition";
-import { useMouseButtons } from "./useMouseButtons";
+import { useMouse } from "./useMouse";
 import { useTouchPositions } from "./useTouchPositions";
 import { Position } from "./main.d";
 
 export const usePositions = () => {
-  const { leftDown, rightDown } = useMouseButtons();
-  const mousePosition = useMousePosition();
-  const touchPositions = useTouchPositions();
-  const positions: Position[] = [...touchPositions];
+  const { position, leftDown, rightDown } = useMouse({});
+  const { positions: _positions } = useTouchPositions({});
+  const positions: Position[] = [..._positions];
 
-  if (leftDown) {
-    positions.push(mousePosition);
+  if ((leftDown || rightDown) && position) {
+    positions.push(position);
   }
 
   return positions;
